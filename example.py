@@ -112,6 +112,7 @@ def example4():
 
 
 class Example5(object):
+    print ' -example5- '*10
     def __init__(self):
         winner = gevent.spawn(self.win)
         loser = gevent.spawn(self.fail)
@@ -148,8 +149,36 @@ class Example5(object):
     def isStart(cls,*args,**kwargs):
         pass
 
-Example5()
+# Example5()
 
 
-    
 
+'''gevent Timeout用法，以及 try...except... 新的理解'''
+from gevent import Timeout
+
+class Example6(object):
+    print ' -example6- ' * 10
+
+    def __init__(self):
+        pass
+        self.timeout(5)
+        # TODO: try...except 只会执行其中一步，另外一步就默认不走，与 if ...else... 一样
+        try:
+            gevent.spawn(self.wait,5).join()  # todo :wait() 睡眠时间比 timeout() 低，就只会执行 try 语句
+        except Timeout:
+            print 'could not complete'
+
+        try:
+            gevent.spawn(self.wait,3).join()  # todo :wait() 睡眠时间比 timeout() 低，就只会执行 try 语句
+        except Timeout:
+            print 'could not complete'
+
+    def timeout(self,n=5):
+        timeout = Timeout(n)
+        timeout.start()
+
+
+    def wait(self,n=5):
+        gevent.sleep(n)
+
+Example6()
