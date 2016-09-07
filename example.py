@@ -7,8 +7,14 @@ import random
 
 from gevent import select,Greenlet
 
-start = time.time()
-tic = lambda : 'at %1.1f seconds '%(time.time() - start)
+'''xxxx'''
+class Example0(object):
+    print ' -example0- ' * 10
+
+    def __init__(self):
+        pass
+
+
 
 
 ''' 理解 joinall 的意义'''
@@ -16,6 +22,8 @@ class Example1(object):
     print ' -example1- '*10
 
     def __init__(self):
+        start = time.time()
+        self.tic = lambda : 'at %1.1f seconds '%(time.time() - start)
         # gevent.joinall()     #TODO 等待所有greenlet完成
         gevent.joinall([
             gevent.spawn(self.gr1),
@@ -25,22 +33,22 @@ class Example1(object):
         ])
     def gr1(self):
         print
-        print 'gr1 started polling: ',tic();
+        print 'gr1 started polling: ',self.tic();
         select.select([],[],[],2)
-        print 'gr1 end polling: ',tic();
+        print 'gr1 end polling: ',self.tic();
 
     def gr2(self):
-        print 'gr2 started polling: ',tic();
+        print 'gr2 started polling: ',self.tic();
         select.select([],[],[],2)
-        print 'gr2 end polling: ',tic();
+        print 'gr2 end polling: ',self.tic();
 
     def gr3(self):
-        print 'gr3 started polling: ',tic();
+        print 'gr3 started polling: ',self.tic();
         select.select([],[],[],2)
-        print 'gr3 end polling: ',tic();
+        print 'gr3 end polling: ',self.tic();
 
     def gr4(self):
-        print "Hey lets do some stuff while the greenlets poll, at", tic()
+        print "Hey lets do some stuff while the greenlets poll, at", self.tic()
         gevent.sleep(1)
 # Example1()
 
@@ -161,24 +169,85 @@ class Example6(object):
 
     def __init__(self):
         pass
-        self.timeout(5)
+        #TODO 在超时后，就会引起异常错误，否则不会报错
+        self.timeout(5)    # todo:异步执行
         # TODO: try...except 只会执行其中一步，另外一步就默认不走，与 if ...else... 一样
         try:
-            gevent.spawn(self.wait,5).join()  # todo :wait() 睡眠时间比 timeout() 低，就只会执行 try 语句
+            '''执行这步'''
+            print u'执行try'
+            gevent.spawn(self.wait,3).join()  # todo :wait() 睡眠时间比 timeout() 低，就只会执行 try 语句
         except Timeout:
+            print u'执行 except'
             print 'could not complete'
 
         try:
-            gevent.spawn(self.wait,3).join()  # todo :wait() 睡眠时间比 timeout() 低，就只会执行 try 语句
+            print u'执行try'
+            gevent.spawn(self.wait,5).join()  # todo :wait() 睡眠时间比 timeout() 低，就只会执行 try 语句
         except Timeout:
+            '''执行这步'''
+            print u'执行 except'
             print 'could not complete'
 
     def timeout(self,n=5):
         timeout = Timeout(n)
         timeout.start()
 
-
     def wait(self,n=5):
         gevent.sleep(n)
 
-Example6()
+# Example6()
+
+
+''' with 处理上下文'''
+class Example7(object):
+    print ' -example7- ' * 10
+
+    def __init__(self):
+        # time_to_wait = 2
+        # class TooLong(Exception):
+        #     pass
+        # with Timeout(time_to_wait, TooLong):
+        #     gevent.sleep(5)
+
+        time_to_wait = 5
+        class TooLong(Exception):
+            pass
+        # TODO: 在超时后，就会引起异常错误，否则不会报错
+        with Timeout(time_to_wait, TooLong):
+            gevent.sleep(2)
+
+# Example7()
+
+
+import socket
+from gevent import monkey
+import select
+
+'''Monkey patching 猴子补丁
+    URL : http://xlambda.com/gevent-tutorial/#monkey-patching
+    1.在极端情况下当一个库需要修改Python本身 的基础行为的时候，猴子补丁就派上用场了。
+    2.gevent能够 修改标准库里面大部分的阻塞式系统调用，包括socket、ssl、threading和 select等模块，而变为协作式运行,
+'''
+class Example8(object):
+    print ' -example8- ' * 10
+
+    def __init__(self):
+        pass
+        print '-' * 10
+        print 'socket.socket:',socket.socket
+        print 'after monkey patch'
+        monkey.patch_socket()
+        print 'socket.socket:',socket.socket
+
+        print '-' * 10
+        print 'select.select:',select.select
+        print 'after monkey patch'
+        monkey.patch_select()
+        print 'select.select:',select.select
+# Example8()
+
+
+
+
+
+
