@@ -107,6 +107,49 @@ def example4():
     g.start()
     g.join()
 
-# example4()
+# example4
 
+
+
+class Example5(object):
+    def __init__(self):
+        winner = gevent.spawn(self.win)
+        loser = gevent.spawn(self.fail)
+        # TODO: started表示的Greenlet是否已经开始,返回布尔值
+        print winner.started
+        print loser.started
+
+        try:
+            gevent.joinall([winner,loser]) # 将会报错，由于 fail() 函数本身就会报错
+        except Exception as e:
+            print 'this will never be reached,Error:',e
+
+    # 获取函数值, 这步 有可能比 try...except 快
+        print 'winner.value:',winner.value
+        print 'loser.value:',loser.value   # 由于异常，此处是 None，获取值在下面会得到
+
+    # 测试是否已停止 Greenlet 的布尔值
+        print 'winner.ready():',winner.ready()  #true
+        print 'loser.ready():',loser.ready()    #true
+
+    # 测试是否已经成功停止 Greenlet
+        print 'winner.successful():',winner.successful()    #true
+        print 'loser.successful():',loser.successful()      #False
+    # TODO :打印异常报错信息
+        print 'loser.exception:',loser.exception
+
+    def win(self):
+        return 'Your Win!'
+
+    def fail(self):
+        raise Exception('You fail at failing.')
+
+    @classmethod
+    def isStart(cls,*args,**kwargs):
+        pass
+
+Example5()
+
+
+    
 
