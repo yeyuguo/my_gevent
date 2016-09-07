@@ -90,3 +90,23 @@ class Example3(object):
 # Example3()
 
 
+'''重载Greenlet类'''
+class MyGreenlet(Greenlet):
+    print ' -example4- '*10
+    def __init__(self,message,n):
+        Greenlet.__init__(self)
+        self.message = message
+        self.n = n
+    # TODO 重写_run方法
+    def _run(self):
+        print self.message
+        gevent.sleep(self.n)
+
+def example4():
+    g = MyGreenlet('Hi there',3)
+    g.start()
+    g.join()
+
+# example4()
+
+
